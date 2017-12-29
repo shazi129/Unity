@@ -7,30 +7,38 @@ public class IGridUI
 {
     public string title { get; set; }
     public int rowIndex { get; set; }
+    public virtual IGridData getData() { return null; }
     public virtual void setData(IGridData data) { }
     public virtual void setGUIStyle(GUIStyle style) { }
     public virtual void draw() { }
     public virtual bool isDirty() { return false; }
+    public virtual void initStyle() { }
 }
 
 public class GridGUI<T> : IGridUI
 {
-    protected GridData<T> _data;
-    protected GUIStyle _style;
+    protected GridData<T> _data = null;
+    protected GUIStyle _style = null;
 
-    public GridGUI()
+    public override void initStyle()
     {
         _style = new GUIStyle(GUI.skin.box);
         _style.margin.left = 0;
         _style.margin.right = 0;
         _style.margin.top = 0;
         _style.margin.bottom = 0;
+        _style.fixedHeight = 20;
     }
 
     public override void setData(IGridData iData)
     {
         base.setData(_data);
         _data = iData as GridData<T>;
+    }
+
+    public override IGridData getData()
+    {
+        return _data;
     }
 
     public override void draw()
@@ -89,19 +97,18 @@ public class GridGUIManager
         _createDic.Add(typeof(Sprite), typeof(SpriteGridGUI));
     }
 
-    public IGridUI draw(IGridData iData)
+    public IGridUI createGridUI(IGridData iData)
     {
         IGridUI gridUI = null;
-        if(_createDic.ContainsKey(iData.dataType))
+        if (_createDic.ContainsKey(iData.dataType))
         {
             Type gridType = _createDic[iData.dataType];
-            gridUI = (IGridUI)Activator.CreateInstance(gridType, new object[] {});
+            gridUI = (IGridUI)Activator.CreateInstance(gridType, new object[] { });
         }
 
         if (gridUI != null)
         {
             gridUI.setData(iData);
-            gridUI.draw();
         }
 
         return gridUI;

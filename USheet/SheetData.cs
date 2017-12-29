@@ -130,6 +130,16 @@ public class SheetData : ScriptableObject
     }
     
 
+    public void insert()
+    {
+        List<object> values = new List<object>();
+        for (int i = 0; i < titles.Count; i++)
+        {
+            values.Add(null);
+        }
+        insert(titles, values);
+    }
+
     public void insert(List<String> titles, List<object> values, int index = -1)
     {
         if (titles.Count != values.Count)
@@ -172,7 +182,7 @@ public class SheetData : ScriptableObject
         return result;
     }
 
-    public void delete(int index)
+    public void delete(int index = -1)
     {
         foreach(var item in _table)
         {
@@ -180,5 +190,16 @@ public class SheetData : ScriptableObject
         }
     }
 
-
+    public void modify(string title, int rowIndex, IGridData iData)
+    {
+        if (_table.ContainsKey(title))
+        {
+            IColumnData columnData = _table[title];
+            columnData.modify(rowIndex, iData);
+        }
+        else
+        {
+            Debug.LogError("Modify SheetData error: no that title:" + title);
+        }
+    }
 }

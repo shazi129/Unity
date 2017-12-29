@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -7,74 +8,92 @@ using UnityEngine;
 [CustomEditor(typeof(SheetData))]
 public class SheetDataEditor : Editor {
 
-    private Sprite tmp = null;
-
     SheetData editorData;
-
     List<List<IGridUI>> _allGridUIs = new List<List<IGridUI>>();
+
+    List<Rect> _titleRects = new List<Rect>();
+    List<Rect> _rowNumRects = new List<Rect>();
+
+    private void createSheet()
+    {
+        editorData.loadData();
+        createGridUIs();
+    }
 
     protected void OnEnable()
     {
+        editorData = target as SheetData;
+        createSheet();
     }
 
     public override void OnInspectorGUI()
     {
-        editorData = target as SheetData;
-        editorData.loadData();
-
-
-
         drawTitles();
         drawContent();
 
         GUILayout.Label("totol row:" + editorData.rowCount + ", totol col:" + editorData.columnCount);
 
-        tmp = (Sprite)EditorGUILayout.ObjectField(tmp, typeof(Sprite), true, GUILayout.Width(100));
+        #region test
 
-        if (GUILayout.Button("Save Scriptable Data"))
+        if (GUILayout.Button("Apply"))
         {
-            List<string> titles = new List<string>() { "name", "age", "home", "icon"};
-
-            editorData.insertColumn("name", "");
-            editorData.insertColumn("age", 0);
-            editorData.insertColumn("home", "");
-            editorData.insertColumn<Sprite>("icon", null);
-
-            editorData.insert(titles, new List<object>() {"zhangwen", 31, "guangxi", tmp});
-            editorData.insert(titles, new List<object>() { "daiwenwen", 29, "henan", tmp });
-
-            EditorUtility.SetDirty(target);
+            saveData();
         }
-
-        if (GUILayout.Button("Load Scriptable Data"))
+        if (GUILayout.Button("Reload"))
         {
-            for (int i = 0; i < editorData.rowCount; i++)
-            {
-                Dictionary<string, IGridData> row = editorData.getRow(i);
-                Debug.Log("myName: " + (row["name"] as GridData<string>).data);
-                Debug.Log("myLevel: " + (row["age"] as GridData<int>).data);
-                Debug.Log("myIcon: " + (row["icon"] as GridData<Sprite>).data);
-            }
+            createSheet();
+            Repaint();
         }
-
-        if (GUILayout.Button("Clear Scriptable Data"))
+        if (GUILayout.Button("Add Row"))
         {
-            editorData.clearData();
-            EditorUtility.SetDirty(target);
+            addRow();
+            createSheet();
+            Repaint();
         }
-
-        base.OnInspectorGUI();
+        if (GUILayout.Button("Delete Row"))
+        {
+            deleteRow();
+            createSheet();
+            Repaint();
+        }
+        if (GUILayout.Button("Add Column"))
+        {
+            addColumn();
+            createSheet();
+            Repaint();
+        }
+        #endregion
+        //base.OnInspectorGUI();
     }
 
+    
     private void drawTitles()
     {
         EditorGUILayout.BeginHorizontal();
+        drawRowNo(-1);
+
+        if (_titleRects.Count != editorData.columnCount)
+        {
+            _titleRects.Clear();
+            for (int i = 0; i < editorData.columnCount; i++)
+            {
+                _titleRects.Add(new Rect(0, 0, 0,0));
+            }
+        }
+
         for (int i = 0; i < editorData.columnCount; i++)
         {
-            if (GUILayout.Button(editorData.titles[i], EditorStyles.toolbarButton, GUILayout.Width(100)))
+            if (GUILayout.Button(editorData.titles[i], EditorStyles.toolbarPopup))
             {
-
+                PopupMenu menu = new PopupMenu();
+                menu.addItem("Add Column", null);
+                menu.addItem("Rename", null);
+                PopupWindow.Show(_titleRects[i], menu);
             }
+
+            if (Event.current.type == EventType.Repaint)
+                _titleRects[i] = GUILayoutUtility.GetLastRect();
+
         }
         EditorGUILayout.EndHorizontal();
     }
@@ -83,36 +102,90 @@ public class SheetDataEditor : Editor {
     {
         EditorGUILayout.BeginVertical();
 
-        for (int i = 0; i < editorData.rowCount; i++)
+        for (int rowIndex = 0; rowIndex < _allGridUIs.Count; rowIndex++)
         {
-            List<IGridUI> row = drawRow(i);
-            if (row != null)
+            
+            List<IGridUI> row = _allGridUIs[rowIndex];
+
+            EditorGUILayout.BeginHorizontal();
+            drawRowNo(rowIndex);
+            for (int colIndex = 0; colIndex < row.Count; colIndex++)
             {
-                _allGridUIs.Add(row);
+                row[colIndex].initStyle();
+                row[colIndex].draw();
             }
+            EditorGUILayout.EndHorizontal();
+
         }
 
         EditorGUILayout.EndVertical();
     }
 
-    private List<IGridUI> drawRow(int index)
+    private void createGridUIs()
     {
-        Dictionary<string, IGridData> rowData = editorData.getRow(index);
-        if (rowData.Count > 0)
+        _allGridUIs.Clear();
+
+        for (int rowIndex = 0; rowIndex < editorData.rowCount; rowIndex++)
         {
-            List<IGridUI> row = new List<IGridUI>();
-
-            EditorGUILayout.BeginHorizontal();
-            for (int i = 0; i < editorData.titles.Count; i++)
+            Dictionary<string, IGridData> rowData = editorData.getRow(rowIndex);
+            if (rowData.Count > 0)
             {
-                string titleName = editorData.titles[i];
-                IGridUI grid = GridGUIManager.getInstance().draw(rowData[titleName]);
-                row.Add(grid);
-            }
-            EditorGUILayout.EndHorizontal();
+                List<IGridUI> row = new List<IGridUI>();
 
-            return row;
+                for (int colIndex = 0; colIndex < editorData.titles.Count; colIndex++)
+                {
+                    string titleName = editorData.titles[colIndex];
+                    IGridUI grid = GridGUIManager.getInstance().createGridUI(rowData[titleName]);
+                    grid.title = titleName;
+                    row.Add(grid);
+                }
+
+                _allGridUIs.Add(row);
+            }
         }
-        return null;        
+    }
+
+    private void saveData()
+    {
+        for (int rowIndex = 0; rowIndex < _allGridUIs.Count; rowIndex++)
+        {
+            for (int colIndex = 0; colIndex < _allGridUIs[rowIndex].Count; colIndex++)
+            {
+                IGridUI gridUI = _allGridUIs[rowIndex][colIndex];
+                editorData.modify(gridUI.title, rowIndex, gridUI.getData());
+            }
+        }
+        EditorUtility.SetDirty(target);
+    }
+
+    private void drawRowNo(int number)
+    {
+        GUIStyle style = new GUIStyle(EditorStyles.toolbarButton);
+        style.fixedWidth = 30;
+        style.fixedHeight = 20;
+
+        string strNo = "";
+        if (number >= 0) strNo = number.ToString();
+        if (GUILayout.Button(strNo, style))
+        {
+
+        }
+    }
+
+    private void addRow()
+    {
+        editorData.insert();
+        EditorUtility.SetDirty(target);
+    }
+
+    private void deleteRow()
+    {
+        editorData.delete();
+        EditorUtility.SetDirty(target);
+    }
+
+    private void addColumn()
+    {
+
     }
 }

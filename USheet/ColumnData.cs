@@ -65,6 +65,8 @@ public class ColumnData<T> : IColumnData
 
     public override void delete(int index)
     {
+        if (index < 0 || index >= data.Count)
+            index = data.Count - 1;
         data.RemoveAt(index);
     }
 
@@ -80,6 +82,10 @@ public class ColumnData<T> : IColumnData
             }
 
             value = (gridData as GridData<T>).data;
+        }
+        else
+        {
+            Debug.LogError("modify error, gridData is null");
         }
 
         if (!isOutRange(index))
