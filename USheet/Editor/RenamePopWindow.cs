@@ -1,32 +1,62 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 public class RenamePopWindow : PopupWindowContent
 {
-    bool toggle1 = true;
-    bool toggle2 = true;
-    bool toggle3 = true;
+    private string _titleName = "Untitled";
+    private Action<string> _renameAction = null;
+
+    public string titleName
+    {
+        get { return _titleName; }
+        set
+        {
+            _titleName = value;
+            if (editorWindow != null)
+            {
+                editorWindow.Repaint();
+            }
+        }
+    }
+
+    public Action<string> renameAction
+    {
+        set { _renameAction = value; }
+        get { return _renameAction; }
+    }
 
     public override Vector2 GetWindowSize()
     {
-        return new Vector2(200, 150);
+        return new Vector2(180, 90);
     }
 
     public override void OnGUI(Rect rect)
     {
-        GUILayout.Label("Popup Options Example", EditorStyles.boldLabel);
-        toggle1 = EditorGUILayout.Toggle("Toggle 1", toggle1);
-        toggle2 = EditorGUILayout.Toggle("Toggle 2", toggle2);
-        toggle3 = EditorGUILayout.Toggle("Toggle 3", toggle3);
-    }
+        GUILayout.Label("Rename Column", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
 
-    public override void OnOpen()
-    {
-        Debug.Log("Popup opened: " + this);
-    }
+        EditorGUILayout.BeginHorizontal();
+        _titleName = EditorGUILayout.TextField(_titleName, GUILayout.Width(150));
+        EditorGUILayout.EndHorizontal();
 
-    public override void OnClose()
-    {
-        Debug.Log("Popup closed: " + this);
+        EditorGUILayout.Space();
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("OK", GUILayout.Width(80)))
+        {
+            if (renameAction != null)
+            {
+                renameAction(titleName);
+            }
+            editorWindow.Close();
+        }
+
+        if (GUILayout.Button("Cancel", GUILayout.Width(80)))
+        {
+            editorWindow.Close();
+        }
+
+        EditorGUILayout.EndHorizontal();
     }
 }

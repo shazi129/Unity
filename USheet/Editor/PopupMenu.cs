@@ -49,6 +49,11 @@ public class PopupMenu : PopupWindowContent
         {
             if (GUILayout.Button(item.Key, _itemStyle))
             {
+                if (item.Value != null)
+                {
+                    this.editorWindow.Close();
+                    item.Value();
+                }
                 Debug.Log("OnClick menu:" + item.Key);
             }
         }

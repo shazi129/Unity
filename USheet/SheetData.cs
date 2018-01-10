@@ -202,4 +202,14 @@ public class SheetData : ScriptableObject
             Debug.LogError("Modify SheetData error: no that title:" + title);
         }
     }
+
+    public void modifyColumnName(string oldName, string newName)
+    {
+        int index = titles.IndexOf(oldName);
+        if (index >=0 && _table.ContainsKey(oldName) && !titles.Contains(newName) && !_table.ContainsKey(newName))
+        {
+            titles[index] = newName;
+            _table[oldName].title = newName;
+        }
+    }
 }

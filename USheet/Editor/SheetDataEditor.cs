@@ -14,6 +14,8 @@ public class SheetDataEditor : Editor {
     List<Rect> _titleRects = new List<Rect>();
     List<Rect> _rowNumRects = new List<Rect>();
 
+    AddColumnWindow _addColumnWindow = null;
+
     private void createSheet()
     {
         editorData.loadData();
@@ -24,6 +26,12 @@ public class SheetDataEditor : Editor {
     {
         editorData = target as SheetData;
         createSheet();
+    }
+
+    protected void reloadSheet()
+    {
+        createSheet();
+        Repaint();
     }
 
     public override void OnInspectorGUI()
@@ -41,26 +49,21 @@ public class SheetDataEditor : Editor {
         }
         if (GUILayout.Button("Reload"))
         {
-            createSheet();
-            Repaint();
+            reloadSheet();
         }
         if (GUILayout.Button("Add Row"))
         {
             addRow();
-            createSheet();
-            Repaint();
+            reloadSheet();
         }
         if (GUILayout.Button("Delete Row"))
         {
             deleteRow();
-            createSheet();
-            Repaint();
+            reloadSheet();
         }
         if (GUILayout.Button("Add Column"))
         {
-            addColumn();
-            createSheet();
-            Repaint();
+            reloadSheet();
         }
         #endregion
         //base.OnInspectorGUI();
@@ -83,11 +86,18 @@ public class SheetDataEditor : Editor {
 
         for (int i = 0; i < editorData.columnCount; i++)
         {
+            string titleName = editorData.titles[i];
             if (GUILayout.Button(editorData.titles[i], EditorStyles.toolbarPopup))
             {
                 PopupMenu menu = new PopupMenu();
-                menu.addItem("Add Column", null);
-                menu.addItem("Rename", null);
+                menu.addItem("Add Column", () =>
+                {
+                    showAddColumnWindow();
+                });
+                menu.addItem("Rename", () =>
+                {
+                    showRenameColumnWindow(titleName);
+                });
                 PopupWindow.Show(_titleRects[i], menu);
             }
 
@@ -168,7 +178,7 @@ public class SheetDataEditor : Editor {
         if (number >= 0) strNo = number.ToString();
         if (GUILayout.Button(strNo, style))
         {
-
+            
         }
     }
 
@@ -184,8 +194,28 @@ public class SheetDataEditor : Editor {
         EditorUtility.SetDirty(target);
     }
 
-    private void addColumn()
+    private void showAddColumnWindow()
+    {
+        if (_addColumnWindow == null)
+        {
+            _addColumnWindow = new AddColumnWindow();
+            
+        }
+        PopupWindow.Show(new Rect(0, 0, 0, 0), _addColumnWindow);
+    }
+
+    private void showRenameColumnWindow(string titleName)
     {
 
+        RenamePopWindow dialog = new RenamePopWindow();
+        dialog.renameAction = (string name) =>
+        {
+            editorData.modifyColumnName(titleName, name);
+            EditorUtility.SetDirty(target);
+            reloadSheet();
+        };
+        dialog.titleName = titleName;
+
+        PopupWindow.Show(new Rect(0, 0, 0, 0), dialog);
     }
 }
