@@ -67,6 +67,12 @@ public class SheetData : ScriptableObject
     /// </summary>
     public void insertColumn(string name, E_DATA_TYPE dataType, int index = -1)
     {
+        if (String.IsNullOrEmpty(name))
+        {
+            Debug.LogError("Invalid title name!");
+            return;
+        }
+
         if (_table.ContainsKey(name))
         {
             Debug.LogError("Add Column Error: title name exists");
