@@ -11,7 +11,7 @@ public class IColumnData
     public virtual bool isOutRange(int index) { return false; }
     public virtual int size() { return 0; }
     public virtual void insert(int index, IGridData gridData) { }
-    public virtual void delete(int index) { }
+    public virtual void deleteRow(int index) { }
     public virtual void modify(int index, IGridData gridData) { }
     public virtual IGridData getValue(int index) { return null; }
 }
@@ -22,10 +22,9 @@ public class ColumnData<T> : IColumnData
     public List<T> data;
 
     public T defaultValue { get; set; }
-
-    public ColumnData(T defvalue, int count)
+    
+    public ColumnData(int count)
     {
-        defaultValue = defvalue;
         data = new List<T>();
         for (int i = 0; i < count; i++)
         {
@@ -63,7 +62,7 @@ public class ColumnData<T> : IColumnData
             data.Insert(index, value);
     }
 
-    public override void delete(int index)
+    public override void deleteRow(int index)
     {
         if (index < 0 || index >= data.Count)
             index = data.Count - 1;
@@ -112,26 +111,3 @@ public class ColumnData<T> : IColumnData
     }
 }
 
-[Serializable]
-public class IntColumnData : ColumnData<int>
-{
-    public IntColumnData(int value, int count) : base(value, count)
-    {
-    }
-}
-
-[Serializable]
-public class StringColumnData : ColumnData<string>
-{
-    public StringColumnData(string value, int count) : base(value, count)
-    {
-    }
-}
-
-[Serializable]
-public class SpriteColumnData : ColumnData<Sprite>
-{
-    public SpriteColumnData(Sprite value, int count) : base(value, count)
-    {
-    }
-}

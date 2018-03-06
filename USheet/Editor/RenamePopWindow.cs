@@ -35,10 +35,8 @@ public class RenamePopWindow : PopupWindowContent
     {
         GUILayout.Label("Rename Column", EditorStyles.boldLabel);
         EditorGUILayout.Space();
-
-        EditorGUILayout.BeginHorizontal();
+        
         _titleName = EditorGUILayout.TextField(_titleName, GUILayout.Width(150));
-        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.Space();
         EditorGUILayout.BeginHorizontal();

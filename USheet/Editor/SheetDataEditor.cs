@@ -14,8 +14,6 @@ public class SheetDataEditor : Editor {
     List<Rect> _titleRects = new List<Rect>();
     List<Rect> _rowNumRects = new List<Rect>();
 
-    AddColumnWindow _addColumnWindow = null;
-
     private void createSheet()
     {
         editorData.loadData();
@@ -43,6 +41,14 @@ public class SheetDataEditor : Editor {
 
         #region test
 
+        if (editorData.columnCount == 0)
+        {
+            if (GUILayout.Button("Add First Column"))
+            {
+                showAddColumnWindow(-1);
+            }
+        }
+
         if (GUILayout.Button("Apply"))
         {
             saveData();
@@ -61,12 +67,8 @@ public class SheetDataEditor : Editor {
             deleteRow();
             reloadSheet();
         }
-        if (GUILayout.Button("Add Column"))
-        {
-            reloadSheet();
-        }
         #endregion
-        //base.OnInspectorGUI();
+        base.OnInspectorGUI();
     }
 
     
@@ -92,11 +94,15 @@ public class SheetDataEditor : Editor {
                 PopupMenu menu = new PopupMenu();
                 menu.addItem("Add Column", () =>
                 {
-                    showAddColumnWindow();
+                    showAddColumnWindow(i);
                 });
                 menu.addItem("Rename", () =>
                 {
                     showRenameColumnWindow(titleName);
+                });
+                menu.addItem("Delete Column", () =>
+                {
+                    showDelColumnConfirmWindow(titleName);
                 });
                 PopupWindow.Show(_titleRects[i], menu);
             }
@@ -190,19 +196,23 @@ public class SheetDataEditor : Editor {
 
     private void deleteRow()
     {
-        editorData.delete();
+        editorData.deleteRow();
         EditorUtility.SetDirty(target);
     }
 
-    private void showAddColumnWindow()
+    private void showAddColumnWindow(int columnIndex)
     {
-        if (_addColumnWindow == null)
+        AddColumnWindow dialog = new AddColumnWindow(columnIndex);
+        dialog.createColumnAction = (string title, E_DATA_TYPE dataType, int index) =>
         {
-            _addColumnWindow = new AddColumnWindow();
-            
-        }
-        PopupWindow.Show(new Rect(0, 0, 0, 0), _addColumnWindow);
+            editorData.insertColumn(title, dataType, index);
+            EditorUtility.SetDirty(target);
+            reloadSheet();
+        };
+        PopupWindow.Show(new Rect(0, 0, 0, 0), dialog);
     }
+
+
 
     private void showRenameColumnWindow(string titleName)
     {
@@ -217,5 +227,20 @@ public class SheetDataEditor : Editor {
         dialog.titleName = titleName;
 
         PopupWindow.Show(new Rect(0, 0, 0, 0), dialog);
+    }
+
+    private void showDelColumnConfirmWindow(string titleName)
+    {
+
+        string content = String.Format("Are you sure DELETE column \'{0}\'?", titleName);
+
+        OKCancelWindow delConfirmWindow = new OKCancelWindow("Warnning", content, () =>
+        {
+            editorData.deleteColumn(titleName);
+            EditorUtility.SetDirty(target);
+            reloadSheet();
+        },null);
+
+        PopupWindow.Show(new Rect(0, 0, 0, 0), delConfirmWindow);
     }
 }

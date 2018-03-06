@@ -4,44 +4,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SheetDataSet
-{
-    public Type dataType;
-    public Type columnType;
-    public IList columnSet;
-
-    public SheetDataSet(Type dataType, Type columnType, IList columnSet)
-    {
-        this.dataType = dataType;
-        this.columnType = columnType;
-        this.columnSet = columnSet;
-    }
-}
-
 public class SheetData : ScriptableObject
 {
     //需要序列化的数据
     public List<string> titles = new List<string>(); //用来确定列的顺序
 
-    public List<IntColumnData> intColumns = new List<IntColumnData>();
-    public List<StringColumnData> stringColumns = new List<StringColumnData>();
-    public List<SpriteColumnData> spriteColumns = new List<SpriteColumnData>();
+    public ColumnDataEntry columnData = new ColumnDataEntry();
     //end
 
     //索引
     private Dictionary<string, IColumnData> _table = new Dictionary<string, IColumnData>();
 
-    private List<SheetDataSet> dataSet = new List<SheetDataSet>();
-
     public SheetData()
     {
-        dataSet.Clear();
-        dataSet.Add(new SheetDataSet(typeof(int), typeof(IntColumnData), intColumns));
-        dataSet.Add(new SheetDataSet(typeof(string), typeof(StringColumnData), stringColumns));
-        dataSet.Add(new SheetDataSet(typeof(Sprite), typeof(SpriteColumnData), spriteColumns));
+        columnData.reloadDataMap();
     }
 
-    
     public void Awake()
     {
         Debug.Log("SheetData awake");
@@ -51,12 +29,12 @@ public class SheetData : ScriptableObject
     public void loadData()
     {
         _table.Clear();
-        for (int typeIndex = 0; typeIndex < dataSet.Count; typeIndex++)
+
+        foreach(var item in columnData.typeEntryMap)
         {
-            IList columns = dataSet[typeIndex].columnSet;
-            for (int columnIndex = 0; columnIndex < columns.Count; columnIndex++)
+            for (int columnIndex = 0; columnIndex < item.Value.Count; columnIndex++)
             {
-                IColumnData columnData = columns[columnIndex] as IColumnData;
+                IColumnData columnData = item.Value[columnIndex] as IColumnData;
                 if (_table.ContainsKey(columnData.title))
                 {
                     Debug.LogError("LoadData error: duplicate title:" + columnData.title);
@@ -66,17 +44,6 @@ public class SheetData : ScriptableObject
                     _table.Add(columnData.title, columnData);
                 }
             }
-        }
-    }
-
-    public void clearData()
-    {
-        _table.Clear();
-        titles.Clear();
-
-        for (int i = 0; i < dataSet.Count; i++)
-        {
-            dataSet[i].columnSet.Clear();
         }
     }
 
@@ -98,7 +65,7 @@ public class SheetData : ScriptableObject
     /// <summary>
     /// add a new column
     /// </summary>
-    public void insertColumn<T>(string name, T defValue, int index = -1)
+    public void insertColumn(string name, E_DATA_TYPE dataType, int index = -1)
     {
         if (_table.ContainsKey(name))
         {
@@ -107,25 +74,20 @@ public class SheetData : ScriptableObject
         }
 
         //反射创建一个IColumnData
-        IColumnData newColumn = null;
-        for (int typeIndex = 0; typeIndex < dataSet.Count; typeIndex++)
+        Type columnType = DataTypeManager.instance.getColumnType(dataType);
+        if (columnType != null)
         {
-            if (typeof(T) == dataSet[typeIndex].dataType)
-            {
-                newColumn = (IColumnData)Activator.CreateInstance(dataSet[typeIndex].columnType, new object[] {defValue, rowCount });
-                newColumn.title = name;
+            IColumnData newColumn = (IColumnData)Activator.CreateInstance(columnType, new object[] { rowCount });
+            newColumn.title = name;
 
-                _table.Add(name, newColumn);
-                dataSet[typeIndex].columnSet.Add(newColumn);
+            _table.Add(name, newColumn);
+            columnData.typeEntryMap[dataType].Add(newColumn);
 
-                //插入title
-                if (index >= 0 && index < titles.Count)
-                    titles.Insert(index, name);
-                else
-                    titles.Add(name);
-
-                break;
-            }
+            //插入title
+            if (index >= 0 && index < titles.Count)
+                titles.Insert(index, name);
+            else
+                titles.Add(name);
         }
     }
     
@@ -182,11 +144,11 @@ public class SheetData : ScriptableObject
         return result;
     }
 
-    public void delete(int index = -1)
+    public void deleteRow(int index = -1)
     {
         foreach(var item in _table)
         {
-            item.Value.delete(index);
+            item.Value.deleteRow(index);
         }
     }
 
@@ -210,6 +172,39 @@ public class SheetData : ScriptableObject
         {
             titles[index] = newName;
             _table[oldName].title = newName;
+        }
+    }
+
+    public void deleteColumn(string columnName)
+    {
+        //删除表头
+        titles.Remove(columnName);
+
+        //删除索引
+        _table.Remove(columnName);
+
+        //删除数据
+        foreach (var item in columnData.typeEntryMap)
+        {
+            bool hasDeleted = false;
+
+            for (int i = 0; i < item.Value.Count; i++)
+            {
+                IColumnData colomndata = item.Value[i] as IColumnData;
+                if (colomndata != null)
+                {
+                    if (colomndata.title == columnName)
+                    {
+                        hasDeleted = true;
+                        item.Value.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+            if (hasDeleted)
+            {
+                break;
+            }
         }
     }
 }
