@@ -32,8 +32,31 @@ public class SheetDataEditor : Editor {
         Repaint();
     }
 
+    private void initTitleAndRowNoRects()
+    {
+        //初始化
+        if (_rowNumRects.Count != editorData.rowCount + 1)
+        {
+            _rowNumRects.Clear();
+            for (int i = 0; i <= editorData.rowCount; i++)
+            {
+                _rowNumRects.Add(new Rect(0, 0, 0, 0));
+            }
+        }
+        if (_titleRects.Count != editorData.columnCount)
+        {
+            _titleRects.Clear();
+            for (int i = 0; i < editorData.columnCount; i++)
+            {
+                _titleRects.Add(new Rect(0, 0, 0, 0));
+            }
+        }
+    }
+
     public override void OnInspectorGUI()
     {
+        initTitleAndRowNoRects();
+
         drawTitles();
         drawContent();
 
@@ -57,16 +80,6 @@ public class SheetDataEditor : Editor {
         {
             reloadSheet();
         }
-        if (GUILayout.Button("Add Row"))
-        {
-            addRow();
-            reloadSheet();
-        }
-        if (GUILayout.Button("Delete Row"))
-        {
-            deleteRow();
-            reloadSheet();
-        }
         #endregion
         base.OnInspectorGUI();
     }
@@ -76,15 +89,6 @@ public class SheetDataEditor : Editor {
     {
         EditorGUILayout.BeginHorizontal();
         drawRowNo(-1);
-
-        if (_titleRects.Count != editorData.columnCount)
-        {
-            _titleRects.Clear();
-            for (int i = 0; i < editorData.columnCount; i++)
-            {
-                _titleRects.Add(new Rect(0, 0, 0,0));
-            }
-        }
 
         for (int i = 0; i < editorData.columnCount; i++)
         {
@@ -180,24 +184,42 @@ public class SheetDataEditor : Editor {
         style.fixedWidth = 30;
         style.fixedHeight = 20;
 
-        string strNo = "";
+        string strNo = "+";
         if (number >= 0) strNo = number.ToString();
         if (GUILayout.Button(strNo, style))
         {
+            PopupMenu menu = new PopupMenu();
+
+            if (number < 0)
+            {
+                menu.addItem("Add Column", () =>
+                {
+                    showAddColumnWindow(0);
+                });
+            }
             
+            menu.addItem("Add Row", () =>
+            {
+                editorData.insert(number + 1);
+                EditorUtility.SetDirty(target);
+                reloadSheet();
+            });
+
+            if (number >= 0)
+            {
+                menu.addItem("Delete Row", () =>
+                {
+                    editorData.deleteRow(number);
+                    EditorUtility.SetDirty(target);
+                    reloadSheet();
+                });
+            }
+
+            PopupWindow.Show(_rowNumRects[number+1], menu);
         }
-    }
 
-    private void addRow()
-    {
-        editorData.insert();
-        EditorUtility.SetDirty(target);
-    }
-
-    private void deleteRow()
-    {
-        editorData.deleteRow();
-        EditorUtility.SetDirty(target);
+        if (Event.current.type == EventType.Repaint)
+            _rowNumRects[number+1] = GUILayoutUtility.GetLastRect();
     }
 
     private void showAddColumnWindow(int columnIndex)

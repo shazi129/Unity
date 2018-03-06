@@ -98,14 +98,14 @@ public class SheetData : ScriptableObject
     }
     
 
-    public void insert()
+    public void insert(int index = -1)
     {
         List<object> values = new List<object>();
         for (int i = 0; i < titles.Count; i++)
         {
             values.Add(null);
         }
-        insert(titles, values);
+        insert(titles, values, index);
     }
 
     public void insert(List<String> titles, List<object> values, int index = -1)
