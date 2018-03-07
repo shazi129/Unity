@@ -163,6 +163,7 @@ public class SheetDataEditor : Editor {
         {
             PopupMenu menu = new PopupMenu();
 
+            //+action
             if (number < 0)
             {
                 menu.addItem("Add Column", () =>
@@ -171,12 +172,17 @@ public class SheetDataEditor : Editor {
                 });
             }
             
-            menu.addItem("Add Row", () =>
+            //只能在有title的时候创建行
+            if (editorData.titles.Count > 0)
             {
-                editorData.insert(number + 1);
-                EditorUtility.SetDirty(target);
-                reloadSheet();
-            });
+                menu.addItem("Add Row", () =>
+                {
+                    editorData.insert(number + 1);
+                    EditorUtility.SetDirty(target);
+                    reloadSheet();
+                });
+            }
+            
 
             if (number >= 0)
             {
