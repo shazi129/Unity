@@ -7,6 +7,7 @@ public class IGridUI
 {
     public string title { get; set; }
     public int rowIndex { get; set; }
+    public Action dataChangeAction { get; set; }
     public virtual IGridData getData() { return null; }
     public virtual void setData(IGridData data) { }
     public virtual void setGUIStyle(GUIStyle style) { }
@@ -19,6 +20,8 @@ public class GridGUI<T> : IGridUI
 {
     protected GridData<T> _data = null;
     protected GUIStyle _style = null;
+
+    protected T _tempDataValue;
 
     public override void initStyle()
     {
@@ -57,7 +60,12 @@ public class IntGridGUI : GridGUI<int>
 {
     public override void doDraw(int data)
     {
-        _data.data = EditorGUILayout.IntField(data);
+        int tempdata = EditorGUILayout.IntField(data);
+        if (tempdata != data)
+        {
+            _data.data = tempdata;
+            dataChangeAction();
+        }
     }
 }
 
@@ -65,7 +73,12 @@ public class StringGridGUI : GridGUI<string>
 {
     public override void doDraw(string data)
     {
-        _data.data = EditorGUILayout.TextField(data);
+        string tempdata = EditorGUILayout.TextField(data);
+        if (tempdata != data)
+        {
+            _data.data = tempdata;
+            dataChangeAction();
+        }
     }
 }
 
@@ -73,7 +86,12 @@ public class SpriteGridGUI : GridGUI<Sprite>
 {
     public override void doDraw(Sprite data)
     {
-        _data.data = (Sprite)EditorGUILayout.ObjectField(data, typeof(Sprite), false);
+        Sprite tempdata = (Sprite)EditorGUILayout.ObjectField(data, typeof(Sprite), false);
+        if (tempdata != data)
+        {
+            _data.data = tempdata;
+            dataChangeAction();
+        }
     }
 }
 

@@ -57,31 +57,12 @@ public class SheetDataEditor : Editor {
     {
         initTitleAndRowNoRects();
 
+        GUILayout.Label("row:" + editorData.rowCount + ", col:" + editorData.columnCount);
+
         drawTitles();
         drawContent();
 
-        GUILayout.Label("totol row:" + editorData.rowCount + ", totol col:" + editorData.columnCount);
-
-        #region test
-
-        if (editorData.columnCount == 0)
-        {
-            if (GUILayout.Button("Add First Column"))
-            {
-                showAddColumnWindow(-1);
-            }
-        }
-
-        if (GUILayout.Button("Apply"))
-        {
-            saveData();
-        }
-        if (GUILayout.Button("Reload"))
-        {
-            reloadSheet();
-        }
-        #endregion
-        base.OnInspectorGUI();
+        //base.OnInspectorGUI();
     }
 
     
@@ -155,7 +136,12 @@ public class SheetDataEditor : Editor {
                 for (int colIndex = 0; colIndex < editorData.titles.Count; colIndex++)
                 {
                     string titleName = editorData.titles[colIndex];
+                    int mayBeModifiedIndex = rowIndex;
                     IGridUI grid = GridGUIManager.getInstance().createGridUI(rowData[titleName]);
+                    grid.dataChangeAction = () =>
+                    {
+                        editorData.modify(titleName, mayBeModifiedIndex, grid.getData());
+                    };
                     grid.title = titleName;
                     row.Add(grid);
                 }
@@ -163,19 +149,6 @@ public class SheetDataEditor : Editor {
                 _allGridUIs.Add(row);
             }
         }
-    }
-
-    private void saveData()
-    {
-        for (int rowIndex = 0; rowIndex < _allGridUIs.Count; rowIndex++)
-        {
-            for (int colIndex = 0; colIndex < _allGridUIs[rowIndex].Count; colIndex++)
-            {
-                IGridUI gridUI = _allGridUIs[rowIndex][colIndex];
-                editorData.modify(gridUI.title, rowIndex, gridUI.getData());
-            }
-        }
-        EditorUtility.SetDirty(target);
     }
 
     private void drawRowNo(int number)

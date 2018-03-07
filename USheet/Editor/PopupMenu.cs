@@ -8,8 +8,6 @@ public class PopupMenu : PopupWindowContent
     private Dictionary<string, Action> _menuActionDic = new Dictionary<string, Action>();
     private GUIStyle _itemStyle;
 
-    private List<Rect> _itemsRect = new List<Rect>();
-
     public PopupMenu()
     {
         _itemStyle = new GUIStyle(GUI.skin.label);
