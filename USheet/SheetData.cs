@@ -12,7 +12,7 @@ public class SheetData : ScriptableObject
     public ColumnDataEntry columnData = new ColumnDataEntry();
     //end
 
-    //索引
+    //索引， 只有在loadData之后才可以使用
     private Dictionary<string, IColumnData> _table = new Dictionary<string, IColumnData>();
 
     public SheetData()
@@ -140,16 +140,6 @@ public class SheetData : ScriptableObject
         }
     }
 
-    public Dictionary<string, IGridData> getRow(int index)
-    {
-        Dictionary<string, IGridData> result = new Dictionary<string, IGridData>();
-        foreach (var item in _table)
-        {
-            result.Add(item.Key, item.Value.getValue(index));
-        }
-        return result;
-    }
-
     public void deleteRow(int index = -1)
     {
         foreach(var item in _table)
@@ -212,5 +202,35 @@ public class SheetData : ScriptableObject
                 break;
             }
         }
+    }
+
+    public GridData<T> getValue<T>(string columnName, int index)
+    {
+        return null;
+    }
+
+    public GridData<T> getValue<T, TKey>(string columnName, string keyName, TKey keyValue)
+    {
+        return null;
+    }
+
+    public Dictionary<string, IGridData> getValue<TKey>(List<string> titles, string keyName, TKey keyValue)
+    {
+        return null;
+    }
+
+    public Dictionary<string, IGridData> getRow(int index)
+    {
+        Dictionary<string, IGridData> result = new Dictionary<string, IGridData>();
+        foreach (var item in _table)
+        {
+            result.Add(item.Key, item.Value.getValue(index));
+        }
+        return result;
+    }
+
+    public Dictionary<string, IGridData> getRow<TKey>(string keyName, TKey keyValue)
+    {
+        return null;
     }
 }
