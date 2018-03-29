@@ -1,19 +1,30 @@
 ﻿
 using System;
 
-[Serializable]
-public class IGridData
+namespace USheet
 {
-    public Type dataType;
-}
-
-[Serializable]
-public class GridData<T> : IGridData
-{
-    public T data;
-    public GridData(T value)
+    [Serializable]
+    public class IGridData
     {
-        data = value;
-        dataType = typeof(T);
+        public Type dataType;
+
+        public override string ToString() { return ""; }
+    }
+
+    [Serializable]
+    public class GridData<T> : IGridData
+    {
+        public T data;
+        public GridData(T value)
+        {
+            data = value;
+            dataType = typeof(T);
+        }
+
+        public override string ToString()
+        {
+            object objData = data as object;
+            return string.Format("{0}|{1}", (objData??"null").ToString(), dataType.ToString());
+        }
     }
 }

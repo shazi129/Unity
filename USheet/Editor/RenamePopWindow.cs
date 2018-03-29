@@ -2,59 +2,62 @@
 using UnityEditor;
 using UnityEngine;
 
-public class RenamePopWindow : PopupWindowContent
+namespace USheet
 {
-    private string _titleName = "Untitled";
-    private Action<string> _renameAction = null;
-
-    public string titleName
+    public class RenamePopWindow : PopupWindowContent
     {
-        get { return _titleName; }
-        set
+        private string _titleName = "Untitled";
+        private Action<string> _renameAction = null;
+
+        public string titleName
         {
-            _titleName = value;
-            if (editorWindow != null)
+            get { return _titleName; }
+            set
             {
-                editorWindow.Repaint();
+                _titleName = value;
+                if (editorWindow != null)
+                {
+                    editorWindow.Repaint();
+                }
             }
         }
-    }
 
-    public Action<string> renameAction
-    {
-        set { _renameAction = value; }
-        get { return _renameAction; }
-    }
-
-    public override Vector2 GetWindowSize()
-    {
-        return new Vector2(180, 90);
-    }
-
-    public override void OnGUI(Rect rect)
-    {
-        GUILayout.Label("Rename Column", EditorStyles.boldLabel);
-        EditorGUILayout.Space();
-        
-        _titleName = EditorGUILayout.TextField(_titleName, GUILayout.Width(150));
-
-        EditorGUILayout.Space();
-        EditorGUILayout.BeginHorizontal();
-
-        if (GUILayout.Button("OK", GUILayout.Width(80)))
+        public Action<string> renameAction
         {
-            if (renameAction != null)
+            set { _renameAction = value; }
+            get { return _renameAction; }
+        }
+
+        public override Vector2 GetWindowSize()
+        {
+            return new Vector2(180, 90);
+        }
+
+        public override void OnGUI(Rect rect)
+        {
+            GUILayout.Label("Rename Column", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+
+            _titleName = EditorGUILayout.TextField(_titleName, GUILayout.Width(150));
+
+            EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("OK", GUILayout.Width(80)))
             {
-                renameAction(titleName);
+                if (renameAction != null)
+                {
+                    renameAction(titleName);
+                }
+                editorWindow.Close();
             }
-            editorWindow.Close();
-        }
 
-        if (GUILayout.Button("Cancel", GUILayout.Width(80)))
-        {
-            editorWindow.Close();
-        }
+            if (GUILayout.Button("Cancel", GUILayout.Width(80)))
+            {
+                editorWindow.Close();
+            }
 
-        EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
+        }
     }
 }

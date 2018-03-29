@@ -3,35 +3,39 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class SheetDataEditorUtils : MonoBehaviour {
-
-    public static void CreateScriptableObject<T>() where T : ScriptableObject
+namespace USheet
+{
+    public class SheetDataEditorUtils : MonoBehaviour
     {
-        T asset = ScriptableObject.CreateInstance<T>();
 
-        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        if (path == "")
+        public static void CreateScriptableObject<T>() where T : ScriptableObject
         {
-            path = "Assets";
+            T asset = ScriptableObject.CreateInstance<T>();
+
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (path == "")
+            {
+                path = "Assets";
+            }
+            else if (Path.GetExtension(path) != "")
+            {
+                path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            }
+
+            string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
+
+            AssetDatabase.CreateAsset(asset, assetPathAndName);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = asset;
         }
-        else if (Path.GetExtension(path) != "")
+
+        [MenuItem("Assets/Create/SheetData")]
+        public static void CreateScriptableTable()
         {
-            path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            CreateScriptableObject<SheetData>();
         }
-
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + typeof(T).ToString() + ".asset");
-
-        AssetDatabase.CreateAsset(asset, assetPathAndName);
-
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        EditorUtility.FocusProjectWindow();
-        Selection.activeObject = asset;
-    }
-
-    [MenuItem("Assets/Create/SheetData")]
-    public static void CreateScriptableTable()
-    {
-        CreateScriptableObject<SheetData>();
     }
 }
