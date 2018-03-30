@@ -62,7 +62,7 @@ namespace USheet
             drawTitles();
             drawContent();
 
-           // base.OnInspectorGUI();
+           //base.OnInspectorGUI();
         }
 
 
@@ -73,8 +73,13 @@ namespace USheet
 
             for (int i = 0; i < editorData.columnCount; i++)
             {
-                string titleName = editorData.titles[i];
-                if (GUILayout.Button(editorData.titles[i], EditorStyles.toolbarPopup))
+                string titleName = editorData.getTitle(i);
+                if (string.IsNullOrEmpty(titleName))
+                {
+                    continue;
+                }
+
+                if (GUILayout.Button(titleName, EditorStyles.toolbarPopup))
                 {
                     PopupMenu menu = new PopupMenu();
                     menu.addItem("Add Column", () =>
@@ -133,14 +138,15 @@ namespace USheet
                 {
                     List<IGridUI> row = new List<IGridUI>();
 
-                    for (int colIndex = 0; colIndex < editorData.titles.Count; colIndex++)
+                    for (int colIndex = 0; colIndex < editorData.columnCount; colIndex++)
                     {
-                        string titleName = editorData.titles[colIndex];
+                        string titleName = editorData.getTitle(colIndex);
                         int mayBeModifiedIndex = rowIndex;
                         IGridUI grid = GridGUIManager.getInstance().createGridUI(rowData[titleName]);
                         grid.dataChangeAction = () =>
                         {
                             editorData.modify(titleName, mayBeModifiedIndex, grid.getData());
+                            EditorUtility.SetDirty(target);
                         };
                         grid.title = titleName;
                         row.Add(grid);
@@ -173,7 +179,7 @@ namespace USheet
                 }
 
                 //只能在有title的时候创建行
-                if (editorData.titles.Count > 0)
+                if (editorData.columnCount > 0)
                 {
                     menu.addItem("Add Row", () =>
                     {

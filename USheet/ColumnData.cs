@@ -21,27 +21,34 @@ namespace USheet
     [Serializable]
     public class ColumnData<T> : IColumnData
     {
-        public List<T> data;
+        [SerializeField]
+        private List<T> _data;
 
         public T defaultValue { get; set; }
 
         public ColumnData(int count)
         {
-            data = new List<T>();
+            _data = new List<T>();
             for (int i = 0; i < count; i++)
             {
-                data.Add(defaultValue);
+                _data.Add(defaultValue);
             }
         }
 
         public override bool isOutRange(int index)
         {
-            return index < 0 || index >= data.Count;
+            if (_data != null)
+                return index < 0 || index >= _data.Count;
+            else
+                return true;
         }
 
         public override int size()
         {
-            return data.Count;
+            if (_data == null)
+                return 0;
+            else
+                return _data.Count;
         }
 
         public override void insert(int index, IGridData gridData)
@@ -58,17 +65,20 @@ namespace USheet
                 value = (gridData as GridData<T>).data;
             }
 
+            if (_data == null)
+                _data = new List<T>();
+
             if (isOutRange(index))
-                data.Add(value);
+                _data.Add(value);
             else
-                data.Insert(index, value);
+                _data.Insert(index, value);
         }
 
         public override void deleteRow(int index)
         {
-            if (index < 0 || index >= data.Count)
-                index = data.Count - 1;
-            data.RemoveAt(index);
+            if (index < 0 || index >= _data.Count)
+                index = _data.Count - 1;
+            _data.RemoveAt(index);
         }
 
         public override void modify(int index, IGridData gridData)
@@ -90,7 +100,7 @@ namespace USheet
             }
 
             if (!isOutRange(index))
-                data[index] = value;
+                _data[index] = value;
             else
                 Debug.LogError(string.Format("modify error, index{0} out of range", index));
         }
@@ -98,7 +108,7 @@ namespace USheet
         public T at(int index)
         {
             if (!isOutRange(index))
-                return data[index];
+                return _data[index];
             else
                 Debug.LogError(string.Format("get value error, index{0} out of range", index));
 
@@ -110,6 +120,11 @@ namespace USheet
             T value = at(index);
 
             return new GridData<T>(value);
+        }
+
+        public int indexOf(T value, int startIndex)
+        {
+            return _data.IndexOf(value, startIndex);
         }
     }
 }

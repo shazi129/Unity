@@ -8,18 +8,23 @@ namespace USheet
 {
     public class SheetData : ScriptableObject
     {
-        //需要序列化的数据
-        public List<string> titles = new List<string>(); //用来确定列的顺序
+        #region Serialized Data
+        //ordered titles
+        [SerializeField]
+        private List<string> _titles = new List<string>(); //用来确定列的顺序
 
-        public ColumnDataEntry columnData = new ColumnDataEntry();
-        //end
+        //sheet data
+        [SerializeField]
+        private ColumnDataEntry _columnData = new ColumnDataEntry();
+        #endregion
 
-        //索引， 只有在loadData之后才可以使用
+
+        //索引和列顺序， 只有在loadData之后才可以使用
         private Dictionary<string, IColumnData> _table = new Dictionary<string, IColumnData>();
 
         public SheetData()
         {
-            columnData.reloadDataMap();
+            _columnData.reloadDataMap();
         }
 
         public void OnEnable()
@@ -28,12 +33,25 @@ namespace USheet
             loadData();
         }
 
+        public string getTitle(int index)
+        {
+            if (index >= 0 && index < _titles.Count)
+            {
+                return _titles[index];
+            }
+            else
+            {
+                Debug.LogError(string.Format("SheetData get title error: invalid index {0}", index));
+                return "";
+            } 
+        }
+
         //将序列化的数据载入索引
         public void loadData()
         {
             _table.Clear();
 
-            foreach (var item in columnData.typeEntryMap)
+            foreach (var item in _columnData.typeEntryMap)
             {
                 for (int columnIndex = 0; columnIndex < item.Value.Count; columnIndex++)
                 {
@@ -50,7 +68,7 @@ namespace USheet
             }
         }
 
-        public int columnCount { get { return _table.Count; } }
+        public int columnCount { get { return _titles.Count; } }
 
         //get rows of this sheet
         public int rowCount
@@ -90,13 +108,13 @@ namespace USheet
                 newColumn.title = name;
 
                 _table.Add(name, newColumn);
-                columnData.typeEntryMap[dataType].Add(newColumn);
+                _columnData.typeEntryMap[dataType].Add(newColumn);
 
                 //插入title
-                if (index >= 0 && index < titles.Count)
-                    titles.Insert(index, name);
+                if (index >= 0 && index < _titles.Count)
+                    _titles.Insert(index, name);
                 else
-                    titles.Add(name);
+                    _titles.Add(name);
             }
         }
 
@@ -104,11 +122,11 @@ namespace USheet
         public void insert(int index = -1)
         {
             List<object> values = new List<object>();
-            for (int i = 0; i < titles.Count; i++)
+            for (int i = 0; i < _titles.Count; i++)
             {
                 values.Add(null);
             }
-            insert(titles, values, index);
+            insert(_titles, values, index);
         }
 
         public void insert(List<String> titles, List<object> values, int index = -1)
@@ -166,10 +184,10 @@ namespace USheet
 
         public void modifyColumnName(string oldName, string newName)
         {
-            int index = titles.IndexOf(oldName);
-            if (index >= 0 && _table.ContainsKey(oldName) && !titles.Contains(newName) && !_table.ContainsKey(newName))
+            int index = _titles.IndexOf(oldName);
+            if (index >= 0 && _table.ContainsKey(oldName) && !_titles.Contains(newName) && !_table.ContainsKey(newName))
             {
-                titles[index] = newName;
+                _titles[index] = newName;
                 _table[oldName].title = newName;
             }
         }
@@ -177,13 +195,13 @@ namespace USheet
         public void deleteColumn(string columnName)
         {
             //删除表头
-            titles.Remove(columnName);
+            _titles.Remove(columnName);
 
             //删除索引
             _table.Remove(columnName);
 
             //删除数据
-            foreach (var item in columnData.typeEntryMap)
+            foreach (var item in _columnData.typeEntryMap)
             {
                 bool hasDeleted = false;
 
@@ -238,7 +256,7 @@ namespace USheet
             int startIndex = 0;
             while (startIndex >= 0)
             {
-                startIndex = columnData.data.IndexOf(keyValue, startIndex);
+                startIndex = columnData.indexOf(keyValue, startIndex);
                 if (startIndex >= 0)
                 {
                     result.Add(getRow(startIndex));
@@ -251,6 +269,23 @@ namespace USheet
                 return result;
             }
             return null;
+        }
+
+        public IGridData getValue<T>(string keyName, T keyValue, string title, int index = 0)
+        {
+            if (!_table.ContainsKey(keyName) || !_table.ContainsKey(title))
+            {
+                Debug.LogError(string.Format("SheetData getValue error: title[{0} or {1}] does not exist", keyName, title));
+                return null;
+            }
+            ColumnData<T> columnData = _table[keyName] as ColumnData<T>;
+            if (columnData == null)
+            {
+                Debug.LogError(string.Format("SheetData getValue error: column data type error: {0} does not match the type of column {1}", typeof(T).ToString(), keyName));
+                return null;
+            }
+            int firstIndex = columnData.indexOf(keyValue, index);
+            return _table[title].getValue(firstIndex);
         }
     }
 }
