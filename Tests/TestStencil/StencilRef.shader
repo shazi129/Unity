@@ -14,11 +14,9 @@
 			Stencil
 			{
 				Ref[_StencilRef]
-				Comp Always
-				Pass Replace
+				Comp Equal
+				Pass Keep
 			}
 		}
     }
-
-    FallBack off
 }
