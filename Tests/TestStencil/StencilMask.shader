@@ -31,6 +31,7 @@ Shader "Custom/StencilMask"
 
 			sampler2D _MainTex;
 			float4    _MainTex_ST;
+			float     _StencilRef;
 
 			struct a2v
 			{
@@ -62,10 +63,6 @@ Shader "Custom/StencilMask"
 				{
 					discard;
 				}
-
-				//用于控制是否显示mask图片
-				color.a = 0.5;
-
 				return color;
 			}
 
