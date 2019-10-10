@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,14 +30,16 @@ namespace USheet
         {
             if (data == null)
             {
+#if UNITY_EDITOR
                 data = AssetDatabase.LoadAssetAtPath<SheetData>(dataPath);
                 if (data == null)
                 {
                     Debug.LogWarning("load sheet data error");
                     return;
                 }
+#endif
             }
-            
+
             if (data == null)
             {
                 Debug.LogWarning("sheet data is null");
@@ -139,7 +145,10 @@ namespace USheet
             string value = searchParams[2];
 
             data.modify(columnName, rowNo, new GridData<string>(value));
+
+#if UNITY_EDITOR
             EditorUtility.SetDirty(data);
+#endif
         }
 
         private void onIndexOfBtnClick()
