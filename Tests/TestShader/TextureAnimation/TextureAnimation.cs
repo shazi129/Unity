@@ -16,5 +16,4 @@ public class TextureAnimation : MonoBehaviour
             s.SetPropertyBlock(block);
         }
     }
-
 }
