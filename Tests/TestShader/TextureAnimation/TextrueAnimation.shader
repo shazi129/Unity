@@ -44,7 +44,7 @@
 			struct v2f
 			{
 				float4 pos: SV_POSITION;
-				float3 uv: TEXCOORD0;
+				float2 uv: TEXCOORD0;
 			};
 
 			v2f vert(a2v v)

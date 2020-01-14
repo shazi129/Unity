@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -112,5 +113,11 @@ public class CommonFunc
             }
         }
         return str;
+    }
+
+    public static ulong getCurTime()
+    {
+        TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+        return (ulong)(ts.TotalSeconds * 1000);
     }
 }
