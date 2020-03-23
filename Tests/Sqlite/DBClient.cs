@@ -47,18 +47,20 @@ public class DBClient
 
         try
         {
+            
+            string connectCmd = "Data Source=" + _dbPath + "; ReadOnly=True;";
+            Debug.Log("connet sqlite db: " + connectCmd);
+
             //新建数据库连接
-            _connection = new SqliteConnection(@"Data Source = " + _dbPath);
+            _connection = new SqliteConnection(connectCmd);
 
             //打开数据库
             _connection.Open();
-
-            Debug.Log("open db: " + _dbPath);
         }
         catch (Exception e)
         {
             _connection = null;
-            Debug.Log(e.ToString());
+            Debug.LogError("connet db error: " + e.ToString());
         }
     }
 
@@ -156,6 +158,12 @@ public class DBClient
 
     private SqliteDataReader execute(string sql)
     {
+        if (_connection == null)
+        {
+            Debug.LogError("execute sql[" + sql + "] error: db was not connect");
+            return null;
+        }
+
         try
         {
             SqliteCommand command = _connection.CreateCommand();
