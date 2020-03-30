@@ -155,6 +155,22 @@ public class DBClient
         return ret;
     }
 
+    //批量执行
+    private void executeBatch(List<string> sqlList)
+    {
+        if (_connection == null)
+        {
+            Debug.LogError("execute sql batch error: db was not connect");
+            return;
+        }
+        SqliteTransaction transaction = _connection.BeginTransaction();
+        for (int i = 0; i < sqlList.Count; i++)
+        {
+            execute(sqlList[i]);
+        }
+        transaction.Commit();
+    }
+
 
     private SqliteDataReader execute(string sql)
     {

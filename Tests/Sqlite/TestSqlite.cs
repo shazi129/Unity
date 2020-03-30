@@ -10,7 +10,9 @@ using UnityEngine.UI;
 public class TestSqlite : MonoBehaviour
 {
     public InputField idField;
+
     public Button searchBtn;
+
     public Text outputText;
 
 
