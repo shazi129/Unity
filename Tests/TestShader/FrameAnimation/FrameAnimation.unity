@@ -356,28 +356,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 452535181}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba1e6a02bae4b744c8409ca4a9e38e56, type: 3}
+  m_Script: {fileID: 11500000, guid: 0564ab218bd859d4e9afc034de88bd69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textrueName: frame_texture
-  frameTexSize: 1024
-  frameSpriteList:
-  - {fileID: 2503992082558401399, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 9111150600016823862, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 5437214347655066729, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 6833750909587655342, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -6157566862397466490, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 6927279314453926954, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -8994576315946692409, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -2562049552109183989, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -8704068670747757520, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 4525384175090441893, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 1663730615441722115, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 8530872263456394864, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -2270827172882514648, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: 5587169252079540320, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -4380119760172914283, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
-  - {fileID: -1310613619718599681, guid: 1022c3ad4994b2a49a59491ac01f0b76, type: 3}
+  path: Assets/Tests/TestShader/FrameAnimation
+  frameDataName: frame_data
+  spriteAtlas: {fileID: 4343727234628468602, guid: 9c54ce9fe9967f545b5ec8dc8038505d,
+    type: 2}
 --- !u!1 &1887040566
 GameObject:
   m_ObjectHideFlags: 0

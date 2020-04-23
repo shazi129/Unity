@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class FrameData : ScriptableObject
 {
@@ -13,23 +14,20 @@ public class FrameDataCreater : MonoBehaviour
     public string path = "Assets/Tests/TestShader/FrameAnimation";
     public string frameDataName = "frame_data";
 
-    public Texture2D textrue; 
+    public SpriteAtlas spriteAtlas; 
 
     [ContextMenu("create frame data")]
     public void createFrameData()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(textrue.name + "_0");
-        Debug.Log(textrue.name + "  " + sprites.Length);
+        FrameData frameData = ScriptableObject.CreateInstance<FrameData>();
+        for (int i = 0; i < spriteAtlas.spriteCount; i++)
+        {
+            Rect spriteRect = spriteAtlas.GetSprite("frame_data_" + i).rect;
+            frameData.data.Add(new Vector4(spriteRect.x, spriteRect.y, spriteRect.width, spriteRect.height));
+        }
 
-//         FrameData frameData = ScriptableObject.CreateInstance<FrameData>();
-//         for (int i = 0; i < sprites.Length; i++)
-//         {
-//             Rect spriteRect = sprites[i].rect;
-//             frameData.data.Add(new Vector4(spriteRect.x, spriteRect.y, spriteRect.width, spriteRect.height));
-//         }
-// 
-//         Debug.Log(path);
-//         AssetDatabase.CreateAsset(frameData, path + "/"+ frameDataName + ".asset");
-//         AssetDatabase.SaveAssets();
+        Debug.Log(path);
+        AssetDatabase.CreateAsset(frameData, path + "/"+ frameDataName + ".asset");
+        AssetDatabase.SaveAssets();
     }
 }

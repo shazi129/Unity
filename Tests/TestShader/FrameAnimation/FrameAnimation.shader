@@ -3,13 +3,7 @@
     Properties
     {
         _MainTex ("Main Texture", 2D) = "white" {}
-		_FrameTex("Frame Texture", 2D) = "white"{}
-
 		_Speed("Speed", float) = 30
-		_FrameCount("FrameCount", float) = 16
-
-		_MainTexSize("Main Textrue Size", float) = 1024
-		_FrameTexSize("Frame Textrue size", float) = 4
     }
     SubShader
     {
@@ -27,14 +21,12 @@
 			#pragma fragment frag
 
 			sampler2D _MainTex;
-			sampler2D _FrameTex;
-
 			float4    _MainTex_ST;
 
-			float      _FrameCount;
+			float     _AnimationSize;         //动画的大小，[0-1]
+			uniform float4 _FrameData[100];  //帧数据
+			uniform float _FrameCount;        //一共多少帧
 			float     _Speed;
-			float      _MainTexSize;
-			float      _FrameTexSize;
 
 			struct a2v
 			{
@@ -45,7 +37,7 @@
 			struct v2f
 			{
 				float4 pos: SV_POSITION;
-				float4 uv: TEXCOORD0;
+				float3 uv: TEXCOORD0;
 			};
 
 			v2f vert(a2v v)
@@ -55,19 +47,18 @@
 				o.pos = UnityObjectToClipPos(v.vertex);
 				o.uv.xy = v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw;
 				
-				float frameIndex = floor((_Time.y * _Speed) % _FrameCount);
-				float row = floor(frameIndex / _FrameTexSize);
-				float col = floor(frameIndex % _FrameTexSize);
-				o.uv.z = frac(row / _FrameTexSize) + 0.001;
-				o.uv.w = frac(col / _FrameTexSize) + 0.001;
+
 				return o;
 			}
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				fixed4 frame_data = tex2D(_FrameTex, i.uv.zw).rgba;
+				float frameIndex = floor((_Time.y * _Speed) % _FrameCount);
 
-				fixed2 frame = frame_data.xy + frame_data.zw * i.uv.xy;
+				//当前帧数据
+				fixed4 curFrame = _FrameData[frameIndex];
+
+				fixed2 frame = curFrame.xy + curFrame.zw * i.uv.xy;
 				fixed4 color = tex2D(_MainTex, frame).rgba;
 				return color;
 			}
